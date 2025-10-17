@@ -1,0 +1,3 @@
+supplier_id,name,supplier_type,country,lead_time_days,performance_rating,contact_email,phone_no,created_at
+1,Australian Retail,Local,Australia,5,4.5,sales@aussiesupply.com,,2025-09-12 14:33:18
+2,Nepalese Retail,International,Nepal,14,4.2,export@globalsupply.np,,2025-09-12 14:33:18

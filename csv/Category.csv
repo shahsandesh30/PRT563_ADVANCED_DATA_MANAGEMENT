@@ -1,0 +1,7 @@
+category_id,name,parent_category_id,created_at
+1,Electronics,,12/09/2025 14:33
+2,Computers,1,12/09/2025 14:33
+3,Laptops,2,12/09/2025 14:33
+4,Furniture,,12/09/2025 14:33
+5,Living Room,4,12/09/2025 14:33
+6,Office,4,12/09/2025 14:33

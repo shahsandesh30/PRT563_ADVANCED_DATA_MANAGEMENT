@@ -1,0 +1,4 @@
+location_id,name,location_type,state,address,created_at
+1,DeeWhy Store,Store,NSW,"12 Pittwater Rd, DeeWhy NSW",2025-09-12 14:33:18
+2,DeeWhy Warehouse,Warehouse,NSW,"45 Howard Ave, DeeWhy NSW",2025-09-12 14:33:18
+3,Kathmandu DC,DC,Bagmati,"Thamel-29, Kathmandu Nepal",2025-09-12 14:33:18

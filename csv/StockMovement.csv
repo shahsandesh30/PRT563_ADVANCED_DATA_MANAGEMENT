@@ -1,0 +1,8 @@
+movement_id,product_id,source_location_id,destination_location_id,movement_type,quantity,movement_date,reference
+1,1,,2.0,RECEIPT,10,2025-08-27 12:00,PO#1001
+2,2,,2.0,RECEIPT,8,2025-08-27 12:05,PO#1001
+3,3,,2.0,RECEIPT,20,2025-08-29 12:10,PO#1002
+4,1,2.0,1.0,TRANSFER,6,2025-08-30 09:00,Replenish store
+5,2,2.0,1.0,TRANSFER,5,2025-08-30 09:05,Replenish store
+6,1,1.0,,SALE,-1,2025-09-01 14:31,SALE#5001
+7,2,1.0,,SALE,-1,2025-09-02 16:11,SALE#5002

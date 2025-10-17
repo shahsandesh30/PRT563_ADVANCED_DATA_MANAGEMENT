@@ -1,0 +1,4 @@
+user_id,username,role,active,created_at
+1,sandy,Staff,1,2025-09-12 14:33:18
+2,manager1,Manager,1,2025-09-12 14:33:18
+3,sam,Staff,1,2025-09-12 14:33:18
