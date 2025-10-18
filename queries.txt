@@ -1,0 +1,29 @@
+// ----------Graph Queries (Task 3)----------
+
+// Q1: Category hierarchy → Products 
+MATCH (root:Category {name:'Electronics'})-[:HAS_CHILD*0..3]->(c:Category)-[:HAS_PRODUCT]->(p:Product)
+RETURN root.name AS Root, c.name AS Category, collect(p.name)[0..10] AS Products
+ORDER BY Category;
+
+// Q2: Top suppliers by average contract price
+MATCH (s:Supplier)-[r:SUPPLIES]->(p:Product)
+RETURN s.name AS Supplier,
+       round(avg(r.contract_price),2) AS avg_contract_price,
+       count(p) AS products_supplied
+ORDER BY avg_contract_price DESC
+LIMIT 5;
+
+// Q3: Customer → Products purchased 
+MATCH (c:Customer)-[:MADE]->(:SalesTransaction)-[:CONTAINS]->(:SalesTransactionLine)-[:SOLD]->(p:Product)
+RETURN c.first_name + ' ' + c.last_name AS Customer,
+       collect(DISTINCT p.name) AS Products
+ORDER BY size(Products) DESC
+LIMIT 10;
+
+// Q4: Product flows (StockMovement) across locations 
+MATCH (p:Product)-[:MOVED_AS]->(m:StockMovement)
+OPTIONAL MATCH (m)-[:FROM]->(src:InventoryLocation)
+OPTIONAL MATCH (m)-[:TO]->(dst:InventoryLocation)
+RETURN p.name AS Product, m.movement_type AS Type, src.name AS Source,
+       dst.name AS Destination, m.quantity AS Qty, m.movement_date AS When
+ORDER BY When;

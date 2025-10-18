@@ -1,0 +1,27 @@
+// ----------Task 4 - Centrality Analytics with GDS----------
+
+// Check GDS
+RETURN gds.version() AS gds_version;
+
+// Project Supplier–Product–SalesTransaction graph
+CALL gds.graph.project(
+  'SupplierSalesGraph',
+  ['Supplier', 'Product', 'SalesTransaction'],
+  {
+    SUPPLIES: {type:'SUPPLIES', orientation:'UNDIRECTED'},
+    SOLD:     {type:'SOLD',     orientation:'UNDIRECTED'},
+    MADE:     {type:'MADE',     orientation:'UNDIRECTED'}
+  }
+);
+
+// Run PageRank centrality
+CALL gds.pageRank.stream('SupplierSalesGraph')
+YIELD nodeId, score
+RETURN gds.util.asNode(nodeId).name AS node,
+       labels(gds.util.asNode(nodeId))[0] AS label,
+       round(score,4) AS pageRank
+ORDER BY pageRank DESC
+LIMIT 10;
+
+// Drop the in-memory graph
+CALL gds.graph.drop('SupplierSalesGraph');

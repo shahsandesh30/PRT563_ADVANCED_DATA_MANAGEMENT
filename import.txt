@@ -1,0 +1,224 @@
+// ----------Graph Database Implementation(Task 2)----------
+
+//Base path for CSV files (public GitHub RAW URLs)
+:param BASE => 'https://raw.githubusercontent.com/shahsandesh30/PRT563_ADVANCED_DATA_MANAGEMENT/main/csv/';
+
+
+// 1) Constraints / Indexes
+CREATE CONSTRAINT category_id_unique        IF NOT EXISTS FOR (c:Category)              REQUIRE c.category_id IS UNIQUE;
+CREATE CONSTRAINT product_id_unique         IF NOT EXISTS FOR (p:Product)               REQUIRE p.product_id  IS UNIQUE;
+CREATE CONSTRAINT supplier_id_unique        IF NOT EXISTS FOR (s:Supplier)              REQUIRE s.supplier_id IS UNIQUE;
+CREATE CONSTRAINT location_id_unique        IF NOT EXISTS FOR (l:InventoryLocation)     REQUIRE l.location_id IS UNIQUE;
+CREATE CONSTRAINT customer_id_unique        IF NOT EXISTS FOR (c:Customer)              REQUIRE c.customer_id IS UNIQUE;
+CREATE CONSTRAINT user_id_unique            IF NOT EXISTS FOR (u:User)                  REQUIRE u.user_id     IS UNIQUE;
+CREATE CONSTRAINT po_id_unique              IF NOT EXISTS FOR (o:PurchaseOrder)         REQUIRE o.po_id       IS UNIQUE;
+CREATE CONSTRAINT pol_id_unique             IF NOT EXISTS FOR (l:PurchaseOrderLine)     REQUIRE l.po_line_id  IS UNIQUE;
+CREATE CONSTRAINT sale_id_unique            IF NOT EXISTS FOR (s:SalesTransaction)      REQUIRE s.sale_id     IS UNIQUE;
+CREATE CONSTRAINT sl_id_unique              IF NOT EXISTS FOR (l:SalesTransactionLine)  REQUIRE l.sale_line_id IS UNIQUE;
+CREATE CONSTRAINT payment_id_unique         IF NOT EXISTS FOR (p:Payment)               REQUIRE p.payment_id  IS UNIQUE;
+CREATE CONSTRAINT movement_id_unique        IF NOT EXISTS FOR (m:StockMovement)         REQUIRE m.movement_id IS UNIQUE;
+
+
+// 2) Load Nodes
+// Category
+LOAD CSV WITH HEADERS FROM $BASE + 'Category.csv' AS row
+MERGE (c:Category {category_id: toInteger(row.category_id)})
+  ON CREATE SET c.name = row.name, c.created_at = row.created_at;
+
+// Product
+LOAD CSV WITH HEADERS FROM $BASE + 'Product.csv' AS row
+MERGE (p:Product {product_id: toInteger(row.product_id)})
+  ON CREATE SET
+    p.category_id      = toInteger(row.category_id),
+    p.sku              = row.sku,
+    p.name             = row.name,
+    p.price            = CASE WHEN row.price = '' THEN null ELSE toFloat(row.price) END,
+    p.warranty_months  = CASE WHEN row.warranty_months = '' THEN null ELSE toInteger(row.warranty_months) END,
+    p.active           = CASE WHEN row.active = '' THEN 1 ELSE toInteger(row.active) END,
+    p.created_at       = row.created_at,
+    p.updated_at       = row.updated_at;
+
+// Supplier
+LOAD CSV WITH HEADERS FROM $BASE + 'Supplier.csv' AS row
+MERGE (s:Supplier {supplier_id: toInteger(row.supplier_id)})
+  ON CREATE SET
+    s.name               = row.name,
+    s.supplier_type      = row.supplier_type,
+    s.country            = row.country,
+    s.lead_time_days     = CASE WHEN row.lead_time_days = '' THEN null ELSE toInteger(row.lead_time_days) END,
+    s.performance_rating = CASE WHEN row.performance_rating = '' THEN null ELSE toFloat(row.performance_rating) END,
+    s.contact_email      = row.contact_email,
+    s.phone_no           = row.phone_no,
+    s.created_at         = row.created_at;
+
+// InventoryLocation
+LOAD CSV WITH HEADERS FROM $BASE + 'InventoryLocation.csv' AS row
+MERGE (l:InventoryLocation {location_id: toInteger(row.location_id)})
+  ON CREATE SET
+    l.name          = row.name,
+    l.location_type = row.location_type,
+    l.state         = row.state,
+    l.address       = row.address,
+    l.created_at    = row.created_at;
+
+// Customer
+LOAD CSV WITH HEADERS FROM $BASE + 'Customer.csv' AS row
+MERGE (c:Customer {customer_id: toInteger(row.customer_id)})
+  ON CREATE SET
+    c.first_name     = row.first_name,
+    c.last_name      = row.last_name,
+    c.email          = row.email,
+    c.phone_no       = row.phone_no,
+    c.loyalty_points = CASE WHEN row.loyalty_points = '' THEN 0 ELSE toInteger(row.loyalty_points) END,
+    c.created_at     = row.created_at;
+
+// User
+LOAD CSV WITH HEADERS FROM $BASE + 'User.csv' AS row
+MERGE (u:User {user_id: toInteger(row.user_id)})
+  ON CREATE SET
+    u.username   = row.username,
+    u.role       = row.role,
+    u.active     = CASE WHEN row.active = '' THEN 1 ELSE toInteger(row.active) END,
+    u.created_at = row.created_at;
+
+// PurchaseOrder
+LOAD CSV WITH HEADERS FROM $BASE + 'PurchaseOrder.csv' AS row
+MERGE (o:PurchaseOrder {po_id: toInteger(row.po_id)})
+  ON CREATE SET
+    o.po_date                = row.po_date,
+    o.status                 = row.status,
+    o.expected_delivery_date = row.expected_delivery_date,
+    o.created_at             = row.created_at,
+    o.supplier_id            = toInteger(row.supplier_id);
+
+// PurchaseOrderLine
+LOAD CSV WITH HEADERS FROM $BASE + 'PurchaseOrderLine.csv' AS row
+MERGE (l:PurchaseOrderLine {po_line_id: toInteger(row.po_line_id)})
+  ON CREATE SET
+    l.ordered_qty = toInteger(row.ordered_qty),
+    l.unit_price  = toFloat(row.unit_price),
+    l.po_id       = toInteger(row.po_id),
+    l.product_id  = toInteger(row.product_id);
+
+// SalesTransaction
+LOAD CSV WITH HEADERS FROM $BASE + 'SalesTransaction.csv' AS row
+MERGE (s:SalesTransaction {sale_id: toInteger(row.sale_id)})
+  ON CREATE SET
+    s.sale_date    = row.sale_date,
+    s.total_amount = toFloat(row.total_amount),
+    s.gst_amount   = toFloat(row.gst_amount),
+    s.created_at   = row.created_at,
+    s.customer_id  = toInteger(row.customer_id),
+    s.location_id  = toInteger(row.location_id),
+    s.user_id      = toInteger(row.user_id);
+
+// SalesTransactionLine
+LOAD CSV WITH HEADERS FROM $BASE + 'SalesTransactionLine.csv' AS row
+MERGE (l:SalesTransactionLine {sale_line_id: toInteger(row.sale_line_id)})
+  ON CREATE SET
+    l.quantity   = toInteger(row.quantity),
+    l.unit_price = toFloat(row.unit_price),
+    l.sale_id    = toInteger(row.sale_id),
+    l.product_id = toInteger(row.product_id);
+
+// Payment
+LOAD CSV WITH HEADERS FROM $BASE + 'Payment.csv' AS row
+MERGE (p:Payment {payment_id: toInteger(row.payment_id)})
+  ON CREATE SET
+    p.payment_type = row.payment_type,
+    p.amount       = toFloat(row.amount),
+    p.payment_date = row.payment_date,
+    p.sale_id      = toInteger(row.sale_id);
+
+// StockMovement
+LOAD CSV WITH HEADERS FROM $BASE + 'StockMovement.csv' AS row
+MERGE (m:StockMovement {movement_id: toInteger(row.movement_id)})
+  ON CREATE SET
+    m.movement_type           = row.movement_type,
+    m.quantity                = toInteger(row.quantity),
+    m.movement_date           = row.movement_date,
+    m.reference               = row.reference,
+    m.product_id              = toInteger(row.product_id),
+    m.source_location_id      = CASE WHEN row.source_location_id = '' THEN null ELSE toInteger(row.source_location_id) END,
+    m.destination_location_id = CASE WHEN row.destination_location_id = '' THEN null ELSE toInteger(row.destination_location_id) END;
+
+
+// 3) Build Relationships
+// Category hierarchy
+LOAD CSV WITH HEADERS FROM $BASE + 'Category.csv' AS row
+WITH row WHERE row.parent_category_id IS NOT NULL AND row.parent_category_id <> ''
+MATCH (parent:Category {category_id: toInteger(row.parent_category_id)}),
+      (child:Category  {category_id: toInteger(row.category_id)})
+MERGE (parent)-[:HAS_CHILD]->(child);
+
+// Category -> Product
+LOAD CSV WITH HEADERS FROM $BASE + 'Product.csv' AS row
+MATCH (c:Category {category_id: toInteger(row.category_id)}),
+      (p:Product  {product_id: toInteger(row.product_id)})
+MERGE (c)-[:HAS_PRODUCT]->(p);
+
+// Supplier -> Product (with contract_price)
+LOAD CSV WITH HEADERS FROM $BASE + 'ProductSupplier.csv' AS row
+MATCH (s:Supplier {supplier_id: toInteger(row.supplier_id)}),
+      (p:Product  {product_id: toInteger(row.product_id)})
+MERGE (s)-[r:SUPPLIES]->(p)
+  ON CREATE SET r.contract_price = CASE WHEN row.contract_price = '' THEN null ELSE toFloat(row.contract_price) END;
+
+// Supplier -> PurchaseOrder
+MATCH (s:Supplier),(o:PurchaseOrder)
+WHERE o.supplier_id = s.supplier_id
+MERGE (s)-[:ISSUED]->(o);
+
+// PurchaseOrder -> PurchaseOrderLine
+MATCH (o:PurchaseOrder),(l:PurchaseOrderLine)
+WHERE l.po_id = o.po_id
+MERGE (o)-[:CONTAINS]->(l);
+
+// PurchaseOrderLine -> Product
+MATCH (l:PurchaseOrderLine),(p:Product)
+WHERE l.product_id = p.product_id
+MERGE (l)-[:ORDERS]->(p);
+
+// Customer -> SalesTransaction
+MATCH (c:Customer),(s:SalesTransaction)
+WHERE s.customer_id = c.customer_id
+MERGE (c)-[:MADE]->(s);
+
+// SalesTransaction -> SalesTransactionLine
+MATCH (s:SalesTransaction),(l:SalesTransactionLine)
+WHERE l.sale_id = s.sale_id
+MERGE (s)-[:CONTAINS]->(l);
+
+// SalesTransactionLine -> Product
+MATCH (l:SalesTransactionLine),(p:Product)
+WHERE l.product_id = p.product_id
+MERGE (l)-[:SOLD]->(p);
+
+// User -> SalesTransaction
+MATCH (u:User),(s:SalesTransaction)
+WHERE s.user_id = u.user_id
+MERGE (u)-[:PROCESSED]->(s);
+
+// SalesTransaction -> InventoryLocation
+MATCH (s:SalesTransaction),(l:InventoryLocation)
+WHERE s.location_id = l.location_id
+MERGE (s)-[:AT_LOCATION]->(l);
+
+// SalesTransaction -> Payment
+MATCH (s:SalesTransaction),(p:Payment)
+WHERE p.sale_id = s.sale_id
+MERGE (s)-[:PAID_WITH]->(p);
+
+// Product -> StockMovement
+MATCH (p:Product),(m:StockMovement)
+WHERE m.product_id = p.product_id
+MERGE (p)-[:MOVED_AS]->(m);
+
+// StockMovement FROM/TO
+MATCH (m:StockMovement),(src:InventoryLocation)
+WHERE m.source_location_id IS NOT NULL AND m.source_location_id = src.location_id
+MERGE (m)-[:FROM]->(src);
+
+MATCH (m:StockMovement),(dst:InventoryLocation)
+WHERE m.destination_location_id IS NOT NULL AND m.destination_location_id = dst.location_id
+MERGE (m)-[:TO]->(dst);

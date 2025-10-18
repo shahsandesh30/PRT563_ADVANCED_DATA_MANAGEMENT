@@ -1,0 +1,23 @@
+// ----------Task 5 - Similarity Analytics (Node Similarity) with GDS----------
+
+// Check GDS
+RETURN gds.version() AS gds_version;
+
+// Project Product–Supplier graph
+CALL gds.graph.project(
+  'ProductSupplierGraph',
+  ['Product', 'Supplier'],
+  { SUPPLIES: {type:'SUPPLIES', orientation:'UNDIRECTED'} }
+);
+
+// Run Node Similarity between Products 
+CALL gds.nodeSimilarity.stream('ProductSupplierGraph')
+YIELD node1, node2, similarity
+RETURN gds.util.asNode(node1).name AS Product1,
+       gds.util.asNode(node2).name AS Product2,
+       round(similarity,3) AS Similarity
+ORDER BY Similarity DESC
+LIMIT 10;
+
+// Drop the in-memory graph
+CALL gds.graph.drop('ProductSupplierGraph');
